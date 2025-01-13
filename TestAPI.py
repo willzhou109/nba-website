@@ -1,6 +1,7 @@
 import http.client
 import json
 from datetime import date, datetime, timedelta
+#from sorting import bubble_sort
 
 # convert timezones
 def convert_utc_to_est(utc_time_str):
@@ -34,9 +35,9 @@ glist = data_json["response"]
 
 print(data_json["results"])
 
-if data_json["results"] > 0 :
-    Func = open("nba.html","w") 
+Func = open("C:/Users/willz/OneDrive/webdevelopment/NBA Stat Tracking/NBA.html","w") 
 
+if data_json["results"] > 0 :
     title = "NBA Project"    
     csspath = "styles.css"
     
@@ -45,7 +46,7 @@ if data_json["results"] > 0 :
                '<title>' + title + '</title>\n' +
                '<link rel="stylesheet" href="' + csspath + '">\n</head>\n<body>\n')
     
-    Func.write('<div>\n<h1>NBA Games Today</h1>\n')                
+    Func.write('<div class="gamesToday">\n<h1>NBA Games Today</h1>\n')                
     
     for game in glist :
         time = game["date"]["start"]
@@ -57,41 +58,71 @@ if data_json["results"] > 0 :
                     '<col span="1" style="width: 33%;">\n' +
                     '<col span="1" style="width: 34%;">\n' + 
                     '<col span="1" style="width: 33%;"></colgroup>\n' + 
-                    '<tr><th colspan="3">'+ eastern_time +  ' (EST)' + '</th></tr>\n' +
+                    '<tr><th colspan="3">'+ eastern_time +  ' (EST)</th></tr>\n' +
                     '<tr><td>' + team_v + '</td>' +
                     '<td>VS</td>' +
                     '<td>' + team_h + '</td></tr></table>\n')
-    Func.write('</div><script> </script> </body> </html>')
-
-    # Saving the data into the HTML file 
-    Func.close()
-    
+    Func.write('</div>')
 
 
 
-# EASTERN CONFERENCE
-conn.request("GET", "/standings?league=standard&season=2024&conference=east", headers=headers)
 
-res2 = conn.getresponse()
-data2 = res2.read()
+# sort the standings based on rank
+def bubble_sort(teams):
+    n = len(teams)
+    for i in range(n):
+        for j in range(0, n-i-1):
+            if teams[j]["conference"]["rank"] > teams[j+1]["conference"]["rank"]:
+                # Swap the elements
+                teams[j], teams[j+1] = teams[j+1], teams[j]
+    return teams
 
-data2_json = json.loads(data2)
 
-standings = data2_json["response"]
+def makeStandingsTable(conference):
+    conn.request("GET", "/standings?league=standard&season=2024&conference=" + conference, headers=headers)
+    res = conn.getresponse()
+    data = res.read()
+    data_json = json.loads(data)
+    standings = bubble_sort(data_json["response"])
+    Func.write('<header class="standingsHeader">--- ' + conference.capitalize() + 'ern Conference ---</header>')
+    Func.write('<table class="standingsTable">')
+    Func.write('<tr><td>Team</td>\n' + '<td></td>\n' + '<td></td>\n' + '<td>W</td>\n' + '<td>L</td>\n' + '<td>Pct</td>\n' + '<td>GB</td>\n' + '<td>Home</td>\n' + '<td>Away</td>\n' + '<td>L10</td>\n' + '<td>Strk</td>\n' + '</tr>')
+    def winOrLoss(tf):
+        if tf == "false":
+            return "L"
+        else:
+            return "W"
+    def gb(value):
+        if isinstance(value, str):
+            return value
+        else:
+            return "-"
+    for team in standings:
+        rank = str(team["conference"]["rank"])
+        name = team["team"]["name"]
+        logo = team["team"]["logo"]
+        wins = str(team["conference"]["win"])
+        losses = str(team["conference"]["loss"])
+        winPct = str(team["win"]["percentage"])
+        gamesBehind = gb(team["gamesBehind"])
+        homeRecord = str(team["win"]["home"]) + "-" + str(team["loss"]["home"])
+        awayRecord = str(team["win"]["away"]) + "-" + str(team["loss"]["away"])
+        lastTen = str(team["win"]["lastTen"]) + "-" + str(team["loss"]["lastTen"])
+        streak = winOrLoss(str(team["winStreak"])) + str(team["streak"])
+        print([name, logo, wins, losses, winPct, gamesBehind, homeRecord, awayRecord, lastTen, streak])
+        Func.write('<tr><td>' + rank + '</td><td>' + '<img class = "logo" src="' + logo + '">' + '</td><td>'
+                    + name + '</td><td>' + wins + '</td><td>' + losses 
+                    + '</td><td>' + winPct + '</td><td>' + "test" + '</td><td>' + homeRecord 
+                    + '</td><td>' + awayRecord + '</td><td>' + lastTen + '</td><td>' + streak + '</td></tr>')
+    Func.write('</table>')
 
 
-for team in standings:
-    rank = team["conference"]["rank"]
-    name = team["team"]["name"]
-    logo = team["team"]["logo"]
-    wins = team["conference"]["win"]
-    losses = team["conference"]["loss"]
-    winPct = team["win"]["percentage"]
-    homeRecord = str(team["win"]["home"]) + "-" + str(team["loss"]["home"])
-    awayRecord = str(team["win"]["away"]) + "-" + str(team["loss"]["away"])
-    lastTen = str(team["win"]["lastTen"]) + "-" + str(team["loss"]["lastTen"])
-    print([name, logo, wins, losses, winPct, homeRecord, awayRecord, lastTen])
-    #Func.write('<tr><td>' + rank + '</td>' + '<td>' + name + '</td>' + '<td>'
-                #+ logo + '</td>'+ '<td>' + wins + '</td>'+ '<td>' + losses + '</td>'
-                #+ '<td>' + winPct + '</td>'+ '<td>' + homeRecord + '</td>'
-                #+ '<td>' + awayRecord + '</td>'+ '<td>' + lastTen + '</td>')
+makeStandingsTable("east")
+makeStandingsTable("west")
+
+
+
+Func.write('<script> </script> </body> </html>')
+
+# Saving the data into the HTML file 
+Func.close()

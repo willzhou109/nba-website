@@ -1,5 +1,9 @@
+/* GAMES */
 *{
   box-sizing: border-box;
+  justify-content: center;
+  align-items: center;
+  overflow: auto;
 }
 
 
@@ -12,8 +16,8 @@ body {
 .gtable {
   width: 70%;
   margin:5px auto;
-  border: 1px solid red;
-border-collapse: collapse;
+  border: 1px solid blue;
+  border-collapse: collapse;
 }
 
 .gtable td {
@@ -23,3 +27,26 @@ border-collapse: collapse;
 h1 {
   text-align: center;
 }
+
+/* STANDINGS */
+.standingsHeader {
+  text-align: center;
+}
+.standingsTable {
+  border: 1px solid pink;
+  border-collapse: collapse;
+  width: 30%;
+  margin: 0 auto;
+}
+
+.standingsTable tr, .standingsTable td {
+  text-align: center;
+  width: auto;
+  padding: 2px 5px;
+}
+
+.logo {
+  width: 25px;
+  height: 25px;
+}
+
