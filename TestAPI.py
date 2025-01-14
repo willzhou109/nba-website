@@ -35,7 +35,7 @@ glist = data_json["response"]
 
 print(data_json["results"])
 
-Func = open("C:/Users/willz/OneDrive/webdevelopment/NBA Stat Tracking/NBA.html","w") 
+Func = open("C:/Users/willz/OneDrive/webdevelopment/NBA Stat Tracking/index.html","w") 
 
 if data_json["results"] > 0 :
     title = "NBA Project"    
